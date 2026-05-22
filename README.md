@@ -1,5 +1,11 @@
 # MD Compose for Thunderbird
 
+## Development
+
+Install dependencies with `pnpm install`.
+
+Use `pnpm run typecheck` to run TypeScript checks, `pnpm run build` to create the unpacked extension in `dist/`, and `pnpm run xpi` to create `artifacts/md-compose-tb.xpi`. The XPI command requires the system `zip` command. The `justfile` exposes matching wrappers for common developer workflows.
+
 ## License
 
 ### Logo

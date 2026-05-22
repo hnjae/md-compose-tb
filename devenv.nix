@@ -7,7 +7,34 @@
   pkgs,
   ...
 }:
+let
+  biomeSettings = {
+    "$schema" = "https://biomejs.dev/schemas/2.4.14/schema.json";
+
+    formatter = {
+      indentStyle = "space";
+      indentWidth = 2;
+    };
+
+    javascript.formatter = {
+      indentStyle = "space";
+      indentWidth = 2;
+    };
+
+    json.formatter = {
+      indentStyle = "space";
+      indentWidth = 2;
+    };
+
+    css.formatter = {
+      indentStyle = "space";
+      indentWidth = 2;
+    };
+  };
+in
 {
+  files."biome.json".json = biomeSettings;
+
   packages = [
     pkgs.unzip
     pkgs.biome
@@ -39,7 +66,10 @@
       };
 
       programs = {
-        biome.enable = true;
+        biome = {
+          enable = true;
+          settings = biomeSettings;
+        };
 
         # Other formatter:
         just.enable = true;

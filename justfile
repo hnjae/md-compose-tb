@@ -12,6 +12,22 @@ _:
 format:
     devenv shell -- treefmt
 
+[group('build')]
+build:
+    pnpm run build
+
+[group('build')]
+package:
+    pnpm run xpi
+
+[group('ci')]
+typecheck:
+    pnpm run typecheck
+
+[group('ci')]
+test:
+    pnpm run test
+
 [group('ci')]
 check:
     devenv tasks run ci:check

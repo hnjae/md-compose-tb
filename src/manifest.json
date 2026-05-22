@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "MD Compose for Thunderbird",
+  "version": "0.0.0",
+  "description": "Compose Thunderbird messages in Markdown and send them as HTML.",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "md-compose-tb@io.github.hnjae",
+      "strict_min_version": "140.0"
+    }
+  }
+}

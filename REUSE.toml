@@ -7,6 +7,7 @@ path = [
   ".rumdl.toml",
   ".typos.toml",
   ".yamlfmt.yaml",
+  "biome.json",
   "devenv.lock",
   "devenv.nix",
   "devenv.yaml",
@@ -20,6 +21,8 @@ path = [
   "AGENTS.md",
   "README.md",
   "REUSE.toml",
+  "src/manifest.json",
+  "tsconfig.json",
 ]
 precedence = "closest"
 SPDX-FileCopyrightText = "2026 KIM Hyunjae"
