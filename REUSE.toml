@@ -11,7 +11,7 @@ path = [
   "devenv.nix",
   "devenv.yaml",
   "docs/**/*.md",
-  "experiments/thunderbird-compose-poc/README.md",
+  "experiments/**/*.md",
   "experiments/thunderbird-compose-poc/manifest.json",
   "LICENSE",
   "package.json",
