@@ -1,0 +1,16 @@
+{
+	"manifest_version": 3,
+	"name": "md-compose-tb Compose Send PoC",
+	"version": "0.0.1",
+	"description": "Validates replacing Thunderbird compose Markdown with HTML and a plain-text fallback before send.",
+	"permissions": ["compose"],
+	"background": {
+		"scripts": ["background.js"]
+	},
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "compose-send-poc@md-compose-tb.local",
+			"strict_min_version": "140.0"
+		}
+	}
+}
