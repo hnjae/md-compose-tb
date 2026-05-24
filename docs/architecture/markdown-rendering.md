@@ -6,7 +6,7 @@ updated: 2026-05-24
 
 ## Summary
 
-Markdown rendering is implemented as a `unified` pipeline that parses GFM input with `remark`, converts the Markdown syntax tree to an HTML syntax tree, applies static syntax highlighting with Shiki, sanitizes the HTML tree with `rehype`, and serializes the result for Thunderbird compose output.
+Markdown rendering is implemented as a `unified` pipeline that parses GFM input with `remark`, converts the Markdown syntax tree to an HTML syntax tree, applies static syntax highlighting with Shiki, sanitizes the HTML tree with `rehype`, and serializes the result for Thunderbird compose output. The Markdown source remains the plain-text fallback for multipart email delivery.
 
 ## Pipeline
 
@@ -19,9 +19,12 @@ flowchart LR
   highlight --> sanitize[rehype-sanitize]
   sanitize --> stringify[rehype-stringify]
   stringify --> html[Email HTML]
+  source --> fallback[Plain-text fallback]
 ```
 
-The rendering entrypoint should expose a small internal API that hides parser and sanitizer details from Thunderbird compose orchestration. The expected boundary is a function that accepts Markdown source and returns rendered HTML plus a plain-text fallback.
+The rendering entrypoint should expose a small internal API that hides parser and sanitizer details from Thunderbird compose orchestration. The expected boundary is a function that accepts Markdown source and returns sanitized rendered HTML while preserving the input source as the plain-text fallback.
+
+Thunderbird compose integration should set `ComposeDetails.body` to the rendered HTML, `ComposeDetails.plainTextBody` to the original Markdown source, and `ComposeDetails.deliveryFormat` to `both` when Thunderbird accepts multipart delivery for the current compose context. This uses Thunderbird's public compose API surface and avoids MIME rewriting, hidden compose DOM wrappers, or post-send message mutation.
 
 ## Package Roles
 

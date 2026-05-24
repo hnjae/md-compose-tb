@@ -6,7 +6,7 @@ updated: 2026-05-24
 
 ## Summary
 
-The extension interprets message source text as GitHub Flavored Markdown (GFM) and sends the generated message as email-safe HTML with a plain-text fallback. GFM is treated as the product Markdown dialect because it is a strict superset of CommonMark and includes widely expected extensions such as tables, strikethrough, autolinks, and task lists.
+The extension interprets message source text as GitHub Flavored Markdown (GFM) and sends the generated message as email-safe HTML with the original Markdown source as the plain-text fallback. GFM is treated as the product Markdown dialect because it is a strict superset of CommonMark and includes widely expected extensions such as tables, strikethrough, autolinks, and task lists.
 
 ## User-Visible Behavior
 
@@ -17,7 +17,9 @@ The extension interprets message source text as GitHub Flavored Markdown (GFM) a
 - Generated images, task list controls, tables, and other GFM-derived output may be restricted or normalized when required for email safety and Thunderbird compatibility.
 - Fenced code blocks with a recognized language may receive static syntax highlighting.
 - Syntax highlighting uses class-based token markup. Highlight colors are best-effort because recipient email clients may remove or ignore CSS, but highlighted code blocks must remain readable as ordinary preformatted text without token CSS.
-- The extension generates both HTML output and a plain-text fallback before Thunderbird sends the message.
+- The extension generates HTML output before Thunderbird sends the message.
+- The plain-text fallback must be the original Markdown source text, not a lossy HTML-to-text rendering.
+- When Thunderbird supports multipart HTML/plain-text delivery for the current compose context, the extension should send both the rendered HTML part and the Markdown source fallback.
 
 ## Compatibility Scope
 
