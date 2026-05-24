@@ -8,9 +8,9 @@ updated: 2026-05-25
 
 이 문서는 Markdown 원본을 Thunderbird compose window에 작성한 뒤 발송 직전에 HTML과 plain-text fallback으로 교체할 수 있는지 검증하기 위한 PoC 계획과 결과 기록 위치이다. 목표는 Markdown 렌더러 품질이 아니라 Thunderbird MailExtension compose API가 최종 발송 본문을 안정적으로 제어할 수 있는지 확인하는 것이다.
 
-## PoC 위치
+## PoC 기록
 
-PoC extension은 `experiments/thunderbird-compose-poc/`에 둔다. 제품 코드가 아니라 Thunderbird API 동작 검증용이므로 의존성 없이 `manifest.json`과 `background.js`만 사용한다.
+검증에는 의존성 없는 임시 MailExtension PoC를 사용했다. PoC는 제품 코드가 아니며, 2026-05-25에 필요한 Thunderbird API 동작 확인을 완료한 뒤 repository에서 제거했다. 검증 결과와 판정은 이 문서에 보존한다.
 
 ## 검증 질문
 
@@ -25,9 +25,9 @@ PoC extension은 `experiments/thunderbird-compose-poc/`에 둔다. 제품 코드
 - listener가 `{ cancel: true }`를 반환하면 send가 취소되는가.
 - listener 예외 발생 시 Thunderbird가 send를 계속하는가, 취소하는가, 또는 오류를 표시하는가.
 
-## 수동 테스트 절차
+## 수동 테스트 절차 기록
 
-1. Thunderbird Add-ons Manager의 debug/add-on loading 기능으로 `experiments/thunderbird-compose-poc/manifest.json`을 임시 로드한다. `Install Add-on From File...` 메뉴를 사용할 때는 `manifest.json`이 아니라 PoC 디렉터리 내용을 XPI로 압축한 파일을 선택한다.
+1. 임시 MailExtension PoC를 Thunderbird Add-ons Manager의 debug/add-on loading 기능 또는 XPI 설치 흐름으로 로드했다.
 2. HTML compose가 켜진 계정에서 새 메일을 작성하고 본문에 `# 제목`, `**bold**`, `- item`을 포함한 Markdown을 입력한다.
 3. 자기 자신 또는 테스트 mailbox로 발송한다.
 4. 수신된 메시지의 원문 보기에서 MIME structure, `text/html`, `text/plain`, rendered HTML, plain fallback을 확인한다.

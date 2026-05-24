@@ -13,7 +13,6 @@ path = [
   "devenv.yaml",
   "docs/**/*.md",
   "experiments/**/*.md",
-  "experiments/thunderbird-compose-poc/manifest.json",
   "LICENSE",
   "package.json",
   "pnpm-lock.yaml",
