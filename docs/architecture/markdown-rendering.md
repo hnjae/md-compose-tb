@@ -6,7 +6,7 @@ updated: 2026-05-24
 
 ## Summary
 
-Markdown rendering is implemented as a `unified` pipeline that parses GFM input with `remark`, converts the Markdown syntax tree to an HTML syntax tree, sanitizes the HTML tree with `rehype`, and serializes the result for Thunderbird compose output.
+Markdown rendering is implemented as a `unified` pipeline that parses GFM input with `remark`, converts the Markdown syntax tree to an HTML syntax tree, applies static syntax highlighting with Shiki, sanitizes the HTML tree with `rehype`, and serializes the result for Thunderbird compose output.
 
 ## Pipeline
 
@@ -15,7 +15,8 @@ flowchart LR
   source[Markdown source] --> parse[remark-parse]
   parse --> gfm[remark-gfm]
   gfm --> bridge[remark-rehype]
-  bridge --> sanitize[rehype-sanitize]
+  bridge --> highlight[Shiki class-based highlighting]
+  highlight --> sanitize[rehype-sanitize]
   sanitize --> stringify[rehype-stringify]
   stringify --> html[Email HTML]
 ```
@@ -28,16 +29,28 @@ The rendering entrypoint should expose a small internal API that hides parser an
 - `remark-parse`: CommonMark parser layer used as the base Markdown parser.
 - `remark-gfm`: GFM extension layer for tables, strikethrough, autolinks, task lists, and related GFM syntax.
 - `remark-rehype`: bridge from Markdown AST to HTML AST.
+- `@shikijs/rehype`: static syntax highlighting layer for fenced code blocks.
+- `@shikijs/transformers`: Shiki transformer support for class-based token output when needed.
 - `rehype-sanitize`: email-safe HTML policy enforcement point.
 - `rehype-stringify`: HTML serializer.
 
+## Syntax Highlighting
+
+Code highlighting uses Shiki with class-based token markup. Shiki is selected because its TextMate grammar and theme model produces higher-quality highlighting than regex-oriented highlighters for common authoring languages such as TypeScript, JavaScript, JSX, HTML, CSS, Markdown, shell, JSON, Python, and diff output. Class-based output is selected over per-token inline styles because it preserves HTML/CSS separation, keeps generated HTML smaller and more maintainable, supports theme changes without rewriting token markup, and degrades to readable plain code if recipient clients discard CSS.
+
+The highlighting layer must be static. The generated email must not depend on JavaScript, remote stylesheets, or client-side highlighting in the recipient's mail client. Unknown or unsupported code fence languages should render as ordinary preformatted code without highlighting rather than attempting unreliable language detection.
+
+Refractor and `rehype-highlight` remain viable alternatives if dependency size or implementation simplicity becomes more important than highlighting fidelity. They are not the primary choice because Prism and highlight.js style tokenizers are generally less expressive than Shiki's TextMate grammar pipeline, and md-compose-tb benefits from editor-quality highlighting while keeping CSS optional.
+
 ## Sanitization Boundary
 
-The sanitizer is an architectural boundary, not a presentation detail. Thunderbird compose integration must only receive HTML that has passed through the email-safe schema. Raw HTML support, custom attributes, inline styles, images, and URL schemes must be added by changing the sanitizer policy deliberately rather than by bypassing it.
+The sanitizer is an architectural boundary, not a presentation detail. Thunderbird compose integration must only receive HTML that has passed through the email-safe schema. Raw HTML support, custom attributes, inline styles, images, token classes, and URL schemes must be added by changing the sanitizer policy deliberately rather than by bypassing it.
+
+The final sanitizer schema must allow only the code-highlight markup required by the selected Shiki output strategy, such as `pre`, `code`, `span`, language classes, and token classes. It must not allow arbitrary author-controlled classes or styles from Markdown input.
 
 ## Bundling
 
-Runtime Markdown dependencies must be bundled into the extension artifact. The extension must not fetch parser, sanitizer, or renderer code from a remote URL at runtime. When the rendering implementation adds npm runtime dependencies, the build should introduce a bundler for the background/rendering entrypoint while keeping the packaged XPI as a static Thunderbird MailExtension directory.
+Runtime Markdown and highlighting dependencies must be bundled into the extension artifact. The extension must not fetch parser, sanitizer, renderer, grammar, theme, or highlighting code from a remote URL at runtime. When the rendering implementation adds npm runtime dependencies, the build should introduce a bundler for the background/rendering entrypoint while keeping the packaged XPI as a static Thunderbird MailExtension directory.
 
 ## License Compliance
 
@@ -45,4 +58,4 @@ The selected Markdown rendering packages are expected to be GPL-compatible permi
 
 ## Tradeoffs
 
-The `unified` pipeline has more packages than a single renderer such as `marked`, `markdown-it`, or direct `micromark` usage. The added dependency surface is accepted because md-compose-tb needs explicit AST-stage control over GFM parsing, HTML generation, sanitization, URL policy, and email-safe output.
+The `unified` pipeline has more packages than a single renderer such as `marked`, `markdown-it`, or direct `micromark` usage. The added dependency surface is accepted because md-compose-tb needs explicit AST-stage control over GFM parsing, HTML generation, syntax highlighting, sanitization, URL policy, and email-safe output.

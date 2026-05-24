@@ -15,6 +15,8 @@ The extension interprets message source text as GitHub Flavored Markdown (GFM) a
 - Raw HTML in Markdown input is not part of the initial supported behavior and must not bypass the email-safe HTML policy.
 - Generated links must not preserve unsafe URL protocols.
 - Generated images, task list controls, tables, and other GFM-derived output may be restricted or normalized when required for email safety and Thunderbird compatibility.
+- Fenced code blocks with a recognized language may receive static syntax highlighting.
+- Syntax highlighting uses class-based token markup. Highlight colors are best-effort because recipient email clients may remove or ignore CSS, but highlighted code blocks must remain readable as ordinary preformatted text without token CSS.
 - The extension generates both HTML output and a plain-text fallback before Thunderbird sends the message.
 
 ## Compatibility Scope
