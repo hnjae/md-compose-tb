@@ -1,5 +1,5 @@
 ---
-updated: 2026-05-24
+updated: 2026-05-25
 ---
 
 # Thunderbird Compose Send Pipeline PoC
@@ -66,11 +66,42 @@ PoC extension은 `experiments/thunderbird-compose-poc/`에 둔다. 제품 코드
 | ---------------- | ------------------- | ------------ | --------------------- | ------------ | ----------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | New HTML compose | 140.10.2esr         | new          | TBD                   | TBD          | Sent        | `multipart/alternative` with plain + HTML | HTML body replacement succeeded. `deliveryFormat: "both"` succeeded. Markdown source was not preserved verbatim in the plain fallback. |
 
+## 검증 결과: 2026-05-25
+
+### 환경
+
+- Date: 2026-05-25
+- OS: Linux
+- Thunderbird: 140.10.2esr
+- Distribution channel: Flathub
+- PoC extension version: 0.0.2
+- Scenario: Sentinel PoC가 `body`, `plainTextBody`, `deliveryFormat: "both"`, `isPlainText: false`를 반환하도록 한 뒤 manual send format을 plain text, HTML, both HTML/plain-text로 각각 선택하고 발송
+
+### 관찰 결과
+
+세 케이스 모두 최종 수신 EML은 `multipart/alternative` 구조였고 `text/plain` 파트와 `text/html` 파트를 모두 포함했다. 사용자가 send format을 plain text, HTML, both 중 무엇으로 선택했는지와 무관하게 PoC가 반환한 `deliveryFormat: "both"`가 최종 MIME 구조에 반영됐다.
+
+세 케이스 모두 `text/html` 파트에는 PoC가 반환한 sentinel HTML이 반영됐다. `data-md-compose-poc="true"` wrapper, `<h1>HTML_SENTINEL</h1>`, `<p>HTML body only</p>`가 보존됐고 Thunderbird는 이를 완전한 HTML document로 감쌌다.
+
+세 케이스 모두 `text/plain` 파트에는 PoC가 반환한 `PLAIN_SENTINEL_7f3a`, `# SHOULD_SURVIVE`, `**BOLD_MARKER**`, `- LIST_MARKER`가 없었다. 대신 plain part는 HTML body에서 생성된 것으로 보이는 `HTML_SENTINEL`과 `HTML body only`만 포함했다. 따라서 이 환경에서는 `onBeforeSend` 반환값의 `plainTextBody`가 최종 `text/plain` MIME part로 보존되지 않고, Thunderbird가 최종 HTML body에서 plain part를 생성한다고 보는 것이 타당하다.
+
+### 판정
+
+| Case                                  | Thunderbird version | Compose type | Send format selected by user | Send result | MIME result                               | Notes                                                                                                                                    |
+| ------------------------------------- | ------------------- | ------------ | ---------------------------- | ----------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Sentinel, manual plain text           | 140.10.2esr         | new          | Plain text                   | Sent        | `multipart/alternative` with plain + HTML | HTML body replacement succeeded. `deliveryFormat: "both"` overrode/converted final delivery. `plainTextBody` sentinel was not preserved. |
+| Sentinel, manual HTML                 | 140.10.2esr         | new          | HTML                         | Sent        | `multipart/alternative` with plain + HTML | HTML body replacement succeeded. `plainTextBody` sentinel was not preserved.                                                             |
+| Sentinel, manual both HTML/plain-text | 140.10.2esr         | new          | Both HTML and plain text     | Sent        | `multipart/alternative` with plain + HTML | HTML body replacement succeeded. `plainTextBody` sentinel was not preserved.                                                             |
+
+### 결론
+
+`ComposeDetails.body`와 `deliveryFormat`은 `onBeforeSend`에서 최종 발송 결과를 제어하는 데 사용할 수 있다. 반면 `ComposeDetails.plainTextBody`는 이 테스트 환경에서 최종 `text/plain` MIME part를 직접 제어하는 수단으로 동작하지 않았다. 정확한 Markdown source fallback은 현재 Thunderbird public compose API만으로 지원된다고 보지 않는다.
+
 ### 후속 검증 필요
 
 - Extension console log에서 `details.isPlainText`와 source field가 무엇이었는지 확인한다.
-- `plainTextBody` 반환값을 sentinel-heavy text로 바꾼 추가 PoC를 실행해 Thunderbird가 이 필드를 무시하는지, 일부만 normalize하는지 확인한다.
-- Plain-text compose에서 같은 반환값을 사용했을 때 HTML 발송으로 전환되는지 별도 확인한다.
+- Thunderbird local Sent/Outbox 원문에서도 동일한 MIME 구조인지 확인해 수신 서버 개입 가능성을 배제한다.
+- 다른 Thunderbird 배포 채널 또는 후속 ESR 버전에서 `plainTextBody` 동작이 달라지는지 확인한다.
 
 ## 참고 자료
 
