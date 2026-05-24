@@ -6,7 +6,7 @@ updated: 2026-05-24
 
 ## Summary
 
-Markdown rendering is implemented as a `unified` pipeline that parses GFM input with `remark`, converts the Markdown syntax tree to an HTML syntax tree, applies static syntax highlighting with Shiki, sanitizes the HTML tree with `rehype`, and serializes the result for Thunderbird compose output. The Markdown source remains the plain-text fallback for multipart email delivery.
+Markdown rendering is implemented as a `unified` pipeline that parses GFM input with `remark`, converts the Markdown syntax tree to an HTML syntax tree, applies static syntax highlighting with Shiki, sanitizes the HTML tree with `rehype`, and serializes the result for Thunderbird compose output. Multipart plain-text delivery is requested through Thunderbird, but the renderer must not assume that Thunderbird will preserve the Markdown source verbatim as the final `text/plain` MIME part.
 
 ## Pipeline
 
@@ -19,12 +19,13 @@ flowchart LR
   highlight --> sanitize[rehype-sanitize]
   sanitize --> stringify[rehype-stringify]
   stringify --> html[Email HTML]
-  source --> fallback[Plain-text fallback]
 ```
 
-The rendering entrypoint should expose a small internal API that hides parser and sanitizer details from Thunderbird compose orchestration. The expected boundary is a function that accepts Markdown source and returns sanitized rendered HTML while preserving the input source as the plain-text fallback.
+The rendering entrypoint should expose a small internal API that hides parser and sanitizer details from Thunderbird compose orchestration. The expected boundary is a function that accepts Markdown source and returns sanitized rendered HTML.
 
-Thunderbird compose integration should set `ComposeDetails.body` to the rendered HTML, `ComposeDetails.plainTextBody` to the original Markdown source, and `ComposeDetails.deliveryFormat` to `both` when Thunderbird accepts multipart delivery for the current compose context. This uses Thunderbird's public compose API surface and avoids MIME rewriting, hidden compose DOM wrappers, or post-send message mutation.
+Thunderbird compose integration should set `ComposeDetails.body` to the rendered HTML and `ComposeDetails.deliveryFormat` to `both` when Thunderbird accepts multipart delivery for the current compose context. A PoC on 2026-05-24 with Thunderbird 140.10.2esr on Linux via Flathub showed that this produces `multipart/alternative` with the rendered HTML part, but the final `text/plain` part did not preserve `ComposeDetails.plainTextBody` as the exact Markdown source. The implementation may still provide `plainTextBody` as a hint if future testing finds value in it, but correctness must not depend on exact Markdown-source fallback.
+
+The architecture intentionally avoids MIME rewriting, hidden compose DOM wrappers, and post-send message mutation. If exact Markdown-source fallback requires one of those mechanisms, it is outside the initial supported implementation.
 
 ## Package Roles
 

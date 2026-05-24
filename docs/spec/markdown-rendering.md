@@ -6,7 +6,7 @@ updated: 2026-05-24
 
 ## Summary
 
-The extension interprets message source text as GitHub Flavored Markdown (GFM) and sends the generated message as email-safe HTML with the original Markdown source as the plain-text fallback. GFM is treated as the product Markdown dialect because it is a strict superset of CommonMark and includes widely expected extensions such as tables, strikethrough, autolinks, and task lists.
+The extension interprets message source text as GitHub Flavored Markdown (GFM) and sends the generated message as email-safe HTML. GFM is treated as the product Markdown dialect because it is a strict superset of CommonMark and includes widely expected extensions such as tables, strikethrough, autolinks, and task lists.
 
 ## User-Visible Behavior
 
@@ -18,8 +18,9 @@ The extension interprets message source text as GitHub Flavored Markdown (GFM) a
 - Fenced code blocks with a recognized language may receive static syntax highlighting.
 - Syntax highlighting uses class-based token markup. Highlight colors are best-effort because recipient email clients may remove or ignore CSS, but highlighted code blocks must remain readable as ordinary preformatted text without token CSS.
 - The extension generates HTML output before Thunderbird sends the message.
-- The plain-text fallback must be the original Markdown source text, not a lossy HTML-to-text rendering.
-- When Thunderbird supports multipart HTML/plain-text delivery for the current compose context, the extension should send both the rendered HTML part and the Markdown source fallback.
+- When Thunderbird supports multipart HTML/plain-text delivery for the current compose context, the extension should request both rendered HTML and plain-text delivery.
+- The extension does not currently guarantee that the `text/plain` MIME part preserves the original Markdown source. In Thunderbird 140.10.2esr on Linux via Flathub, a PoC showed that HTML body replacement and multipart delivery worked, but the final `text/plain` part was derived or normalized by Thunderbird rather than preserving the returned Markdown source verbatim.
+- Exact Markdown-source fallback in `text/plain` is unsupported unless a future implementation proves a non-hacky Thunderbird public API path for preserving it.
 
 ## Compatibility Scope
 
