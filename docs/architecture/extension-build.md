@@ -12,7 +12,7 @@ The product extension uses TypeScript compiled by `tsc` without Vite or another 
 
 The first implementation target is a background-driven Thunderbird extension. The extension does not yet need a bundled web UI, hot module replacement, CSS asset processing, or framework-specific page entrypoints. A plain TypeScript compile keeps the package layout close to the WebExtension runtime layout and makes Thunderbird-specific manifest behavior explicit.
 
-If the extension later adds a substantial popup, options page, preview UI, or editor UI, a bundler can be introduced for those UI entrypoints while keeping the background/send pipeline explicit.
+If the extension later adds a substantial popup, options page, preview UI, editor UI, or bundled runtime dependencies for Markdown rendering, a bundler can be introduced for those entrypoints while keeping the background/send pipeline explicit.
 
 ## Layout
 
@@ -31,4 +31,4 @@ dist/
 
 ## Constraints
 
-The initial TypeScript configuration does not bundle modules. Background entrypoint code should remain self-contained until a bundling strategy is introduced. Production packages must not import code from `experiments/`.
+The initial TypeScript configuration does not bundle modules. Background entrypoint code should remain self-contained until a bundling strategy is introduced. The Markdown rendering architecture is the first expected reason to introduce bundled npm runtime dependencies. Production packages must not import code from `experiments/`.
