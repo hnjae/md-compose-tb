@@ -1,5 +1,5 @@
 ---
-updated: 2026-05-22
+updated: 2026-05-24
 ---
 
 # Thunderbird Compose Send Pipeline PoC
@@ -41,6 +41,36 @@ PoC extension은 `experiments/thunderbird-compose-poc/`에 둔다. 제품 코드
 | New plain-text compose | TBD                 | new          | TBD                   | TBD          | TBD         | TBD         | TBD   |
 | Reply HTML compose     | TBD                 | reply        | TBD                   | TBD          | TBD         | TBD         | TBD   |
 | Forward HTML compose   | TBD                 | forward      | TBD                   | TBD          | TBD         | TBD         | TBD   |
+
+## 검증 결과: 2026-05-24
+
+### 환경
+
+- Date: 2026-05-24
+- OS: Linux
+- Thunderbird: 140.10.2esr
+- Distribution channel: Flathub
+- Scenario: New HTML compose window에 Markdown source를 일반 WYSIWYG 본문 텍스트로 붙여넣고 발송
+
+### 관찰 결과
+
+최종 수신 EML은 `multipart/alternative` 구조였고 `text/plain` 파트와 `text/html` 파트를 모두 포함했다. 따라서 HTML compose에서 `onBeforeSend`가 `deliveryFormat: "both"`를 반환하면 Thunderbird 140.10.2esr Flathub/Linux 환경에서는 multipart HTML/plain-text 발송을 요청할 수 있다.
+
+`text/html` 파트에는 PoC가 반환한 `data-md-compose-poc="true"` wrapper가 남아 있었고 Markdown source가 HTML로 변환되어 반영됐다. `# Markdown compose PoC`는 `<h1>`, `**HTML**`은 `<strong>`, `- item` 목록은 `<ul><li>` 구조로 발송됐다. Thunderbird는 반환된 fragment를 `<!DOCTYPE html>`, `<html>`, `<head>`, `<body>`가 있는 완전한 HTML document로 감쌌지만 wrapper attribute와 inline style은 제거하지 않았다.
+
+`text/plain` 파트는 PoC가 의도한 Markdown 원문 fallback으로 보존되지 않았다. 기대값은 `#`, `**`, `-` 같은 Markdown marker를 포함한 원문이었지만, 실제 plain part는 heading marker가 제거되고 `**HTML**`이 `*HTML*`로, `- item` 목록이 `* item` 형태와 들여쓰기로 변환된 텍스트였다. 이는 `plainTextBody: source` 반환값이 최종 MIME의 `text/plain` 파트에 그대로 반영되지 않았거나, Thunderbird가 HTML body에서 plain-text part를 다시 생성했을 가능성을 시사한다.
+
+### 판정
+
+| Case             | Thunderbird version | Compose type | `details.isPlainText` | Source field | Send result | MIME result                               | Notes                                                                                                                                  |
+| ---------------- | ------------------- | ------------ | --------------------- | ------------ | ----------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| New HTML compose | 140.10.2esr         | new          | TBD                   | TBD          | Sent        | `multipart/alternative` with plain + HTML | HTML body replacement succeeded. `deliveryFormat: "both"` succeeded. Markdown source was not preserved verbatim in the plain fallback. |
+
+### 후속 검증 필요
+
+- Extension console log에서 `details.isPlainText`와 source field가 무엇이었는지 확인한다.
+- `plainTextBody` 반환값을 sentinel-heavy text로 바꾼 추가 PoC를 실행해 Thunderbird가 이 필드를 무시하는지, 일부만 normalize하는지 확인한다.
+- Plain-text compose에서 같은 반환값을 사용했을 때 HTML 발송으로 전환되는지 별도 확인한다.
 
 ## 참고 자료
 
