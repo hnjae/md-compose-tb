@@ -27,7 +27,7 @@ PoC extension은 `experiments/thunderbird-compose-poc/`에 둔다. 제품 코드
 
 ## 수동 테스트 절차
 
-1. Thunderbird Add-ons Manager의 debug/add-on loading 기능으로 `experiments/thunderbird-compose-poc/manifest.json`을 임시 로드한다.
+1. Thunderbird Add-ons Manager의 debug/add-on loading 기능으로 `experiments/thunderbird-compose-poc/manifest.json`을 임시 로드한다. `Install Add-on From File...` 메뉴를 사용할 때는 `manifest.json`이 아니라 PoC 디렉터리 내용을 XPI로 압축한 파일을 선택한다.
 2. HTML compose가 켜진 계정에서 새 메일을 작성하고 본문에 `# 제목`, `**bold**`, `- item`을 포함한 Markdown을 입력한다.
 3. 자기 자신 또는 테스트 mailbox로 발송한다.
 4. 수신된 메시지의 원문 보기에서 MIME structure, `text/html`, `text/plain`, rendered HTML, plain fallback을 확인한다.

@@ -2,12 +2,23 @@
 
 This is a minimal Thunderbird MailExtension for validating whether `browser.compose.onBeforeSend` can replace a Markdown compose body with HTML plus a plain-text fallback immediately before send.
 
-## Load
+## Load Temporarily
 
 1. Open Thunderbird.
 2. Open Add-ons Manager.
-3. Use the temporary/debug add-on loading flow.
+3. Open the debug add-on loading page from the add-on manager tools menu.
 4. Select `experiments/thunderbird-compose-poc/manifest.json`.
+
+## Package For Install From File
+
+`Install Add-on From File...` expects an XPI package, not `manifest.json` directly. Create a temporary XPI from the files inside the PoC directory:
+
+```sh
+cd experiments/thunderbird-compose-poc
+zip -r -X /tmp/thunderbird-compose-poc.xpi manifest.json background.js
+```
+
+Then select `/tmp/thunderbird-compose-poc.xpi` from `Install Add-on From File...`.
 
 ## Test Body
 
