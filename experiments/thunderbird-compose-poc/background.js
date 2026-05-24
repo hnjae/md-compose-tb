@@ -32,32 +32,60 @@ const BLOCK_ELEMENTS = new Set([
   "UL",
 ]);
 
+const POC_MODE = "sentinel";
+const SENTINEL_HTML =
+  '<div data-md-compose-poc="true"><h1>HTML_SENTINEL</h1><p>HTML body only</p></div>';
+const SENTINEL_PLAIN_TEXT = [
+  "PLAIN_SENTINEL_7f3a",
+  "# SHOULD_SURVIVE",
+  "**BOLD_MARKER**",
+  "- LIST_MARKER",
+].join("\n");
+
 browser.compose.onBeforeSend.addListener(async (_tab, details) => {
   try {
     const source = getMarkdownSource(details);
-    const html = renderMarkdown(source);
+    const responseDetails =
+      POC_MODE === "sentinel"
+        ? createSentinelDetails()
+        : createMarkdownDetails(source);
 
     console.log("md-compose-tb PoC onBeforeSend", {
+      mode: POC_MODE,
       type: details.type,
       isPlainText: details.isPlainText,
       sourceField:
         typeof details.plainTextBody === "string" ? "plainTextBody" : "body",
       sourceLength: source.length,
-      htmlLength: html.length,
+      responseBodyLength: responseDetails.body.length,
+      responsePlainTextBodyLength: responseDetails.plainTextBody.length,
     });
 
     return {
-      details: {
-        body: html,
-        plainTextBody: source,
-        deliveryFormat: "both",
-      },
+      details: responseDetails,
     };
   } catch (error) {
     console.error("md-compose-tb PoC failed before send", error);
     return { cancel: true };
   }
 });
+
+function createSentinelDetails() {
+  return {
+    body: SENTINEL_HTML,
+    plainTextBody: SENTINEL_PLAIN_TEXT,
+    deliveryFormat: "both",
+    isPlainText: false,
+  };
+}
+
+function createMarkdownDetails(source) {
+  return {
+    body: renderMarkdown(source),
+    plainTextBody: source,
+    deliveryFormat: "both",
+  };
+}
 
 function getMarkdownSource(details) {
   if (
