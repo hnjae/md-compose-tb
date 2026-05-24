@@ -85,6 +85,8 @@ PoC extension은 `experiments/thunderbird-compose-poc/`에 둔다. 제품 코드
 
 세 케이스 모두 `text/plain` 파트에는 PoC가 반환한 `PLAIN_SENTINEL_7f3a`, `# SHOULD_SURVIVE`, `**BOLD_MARKER**`, `- LIST_MARKER`가 없었다. 대신 plain part는 HTML body에서 생성된 것으로 보이는 `HTML_SENTINEL`과 `HTML body only`만 포함했다. 따라서 이 환경에서는 `onBeforeSend` 반환값의 `plainTextBody`가 최종 `text/plain` MIME part로 보존되지 않고, Thunderbird가 최종 HTML body에서 plain part를 생성한다고 보는 것이 타당하다.
 
+발신자 iCloud Sent mailbox에서 채취한 `plain-text` 케이스 원문도 동일한 MIME 구조와 본문을 가졌다. Sent mailbox 원문에도 `PLAIN_SENTINEL_7f3a`는 없고 `text/plain` 파트에는 `HTML_SENTINEL`과 `HTML body only`만 있었다. 따라서 수신 서버 또는 Gmail 저장 경로가 plain part를 변경했을 가능성은 낮고, Thunderbird 발송/저장 경로에서 이미 HTML-derived plain part가 생성된 것으로 본다.
+
 ### 판정
 
 | Case                                  | Thunderbird version | Compose type | Send format selected by user | Send result | MIME result                               | Notes                                                                                                                                    |
@@ -100,7 +102,6 @@ PoC extension은 `experiments/thunderbird-compose-poc/`에 둔다. 제품 코드
 ### 후속 검증 필요
 
 - Extension console log에서 `details.isPlainText`와 source field가 무엇이었는지 확인한다.
-- Thunderbird local Sent/Outbox 원문에서도 동일한 MIME 구조인지 확인해 수신 서버 개입 가능성을 배제한다.
 - 다른 Thunderbird 배포 채널 또는 후속 ESR 버전에서 `plainTextBody` 동작이 달라지는지 확인한다.
 
 ## 참고 자료
