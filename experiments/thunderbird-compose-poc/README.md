@@ -22,6 +22,8 @@ zip -r -X /tmp/thunderbird-compose-poc.xpi manifest.json background.js
 
 Then select `/tmp/thunderbird-compose-poc.xpi` from `Install Add-on From File...`.
 
+The PoC manifest version is bumped when the packaged behavior changes. If Thunderbird still sends the compose body unchanged, remove the previous `compose-send-poc@md-compose-tb.local` add-on, install the new XPI again, and check the extension console for the `md-compose-tb PoC onBeforeSend` log.
+
 ## Sentinel Test Body
 
 The compose body can contain any short text. The extension ignores it for the final output while `POC_MODE` is `sentinel`.
